@@ -1,10 +1,11 @@
 import moment from "moment"
 
 export const findTimeSlot = (calendarItems, timeSpan, endTimeMax) => {
+  console.log("findTimeSlot -> timeSpan", timeSpan)
   const freeSlots = calendarItems.reduce((results, item, index) => {
     const highlightEndTime = moment(item.end.dateTime)
-      .add(timeSpan.hours, "h")
-      .add(timeSpan, "m")
+      .add(timeSpan.hour, "hours")
+      .add(timeSpan.minutes, "minutes")
 
     if (
       thereIsNotAnEventAftetThis(calendarItems, index) &&
@@ -13,8 +14,8 @@ export const findTimeSlot = (calendarItems, timeSpan, endTimeMax) => {
       results.push({
         start: moment(item.end.dateTime),
         end: moment(item.end.dateTime)
-          .add(timeSpan.hours, "h")
-          .add(timeSpan, "m"),
+          .add(timeSpan.hour, "hours")
+          .add(timeSpan.minutes, "minutes"),
       })
     }
     return results

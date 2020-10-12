@@ -12,6 +12,7 @@ import Box from "@material-ui/core/Box"
 import Button from "@material-ui/core/Button"
 import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
+import { findTimeSlot } from "../services/calendar"
 
 const MOMENT_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
 
@@ -57,7 +58,6 @@ export default function Home() {
   const [freeTimeSlots, setFreeTimeSlots] = useState([])
   useEffect(() => {
     const isBrowser = () => typeof window !== "undefined"
-    console.log("getEvents -> ", moment().endOf("day").format(MOMENT_FORMAT))
     const getEvents = async () => {
       if (isBrowser() && window.gapi) {
         const events = await window.gapi.client.calendar.events.list({
@@ -69,15 +69,23 @@ export default function Home() {
           maxResults: 50,
           orderBy: "startTime",
         })
-        console.log("getEvents -> events", events)
+
+        const nomarlisedEvents = events.result.items.map(event => {
+          const { start, end } = event
+          return { start, end }
+        })
+        const freeTimeSlots = findTimeSlot(
+          nomarlisedEvents,
+          highlightTime.valueGroups,
+          moment().set("hour", 18).set("minute", 0)
+        )
+        setFreeTimeSlots(freeTimeSlots)
       }
     }
     getEvents()
-  }, [])
+  }, [highlightTime])
 
   const skip = ({ step, push }) => {
-    console.log("skip -> step", step)
-    console.log("skip -> freeTimeSlots", freeTimeSlots)
     if (step.id === "setTime" && freeTimeSlots.length === 0) {
       push("noFreeSlots")
     } else {
@@ -130,7 +138,7 @@ export default function Home() {
                   </Typography>
                   <Picker
                     optionGroups={{
-                      hour: [1, 2, 3, 4, 5, 6, 7, 8],
+                      hour: [0, 1, 2, 3, 4, 5, 6, 7, 8],
                       minutes: [0, 15, 30, 45],
                     }}
                     valueGroups={highlightTime.valueGroups}
@@ -151,10 +159,16 @@ export default function Home() {
                 <Box className={classes.card}>
                   <Typography variant="h2">You've got time.</Typography>
                   <Typography>
-                    you have {freeTimeSlots.length} available to focus on your
+                    You have {freeTimeSlots.length} time slots to focus on your
                     highlight. Which one do you want to schedule?
                   </Typography>
 
+                  {freeTimeSlots.map((timeSlot, index) => (
+                    <p key={index}>
+                      {timeSlot.start.format("HH:mm")} -{" "}
+                      {timeSlot.end.format("HH:mm")}
+                    </p>
+                  ))}
                   <Button disabled={true} onClick={next}>
                     Next Step
                   </Button>
