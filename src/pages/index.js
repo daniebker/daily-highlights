@@ -50,12 +50,24 @@ export default function Home() {
     })
   }
 
+  const [freeTimeSlots, setFreeTimeSlots] = useState([])
+
+  const skip = ({ step, push }) => {
+    console.log("skip -> step", step)
+    console.log("skip -> freeTimeSlots", freeTimeSlots)
+    if (step.id === "setTime" && freeTimeSlots.length === 0) {
+      push("noFreeSlots")
+    } else {
+      push()
+    }
+  }
+
   const { authed } = useAuthStatus()
 
   if (authed) {
     return (
       <Box className={classes.root}>
-        <Wizard>
+        <Wizard onNext={skip}>
           <Steps>
             <Step
               id="setHighlights"
@@ -107,6 +119,36 @@ export default function Home() {
                   >
                     Next Step
                   </Button>
+                </Box>
+              )}
+            />
+            <Step
+              id="pickTime"
+              render={({ next }) => (
+                <Box className={classes.card}>
+                  <Typography variant="h2">You've got time.</Typography>
+                  <Typography>
+                    you have {freeTimeSlots.length} available to focus on your
+                    highlight. Which one do you want to schedule?
+                  </Typography>
+
+                  <Button disabled={true} onClick={next}>
+                    Next Step
+                  </Button>
+                </Box>
+              )}
+            />
+            <Step
+              id="noFreeSlots"
+              render={({ next }) => (
+                <Box className={classes.card}>
+                  <Typography variant="h2">
+                    You don't have any free time slots.
+                  </Typography>
+                  <Typography>
+                    You don't have any time slots available at the moment. What
+                    do you want to do to plan in your highlight?
+                  </Typography>
                 </Box>
               )}
             />
