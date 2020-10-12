@@ -51,7 +51,23 @@ export default function Home() {
   }
 
   const [freeTimeSlots, setFreeTimeSlots] = useState([])
-
+  useEffect(() => {
+    const isBrowser = () => typeof window !== "undefined"
+    const getEvents = async () => {
+      if (isBrowser() && window.gapi) {
+        const events = await window.gapi.client.calendar.events.list({
+          calendarId: "primary",
+          timeMin: new Date().toISOString(),
+          showDeleted: false,
+          singleEvents: true,
+          maxResults: 10,
+          orderBy: "startTime",
+        })
+      }
+    }
+    getEvents()
+  }, [])
+  
   const skip = ({ step, push }) => {
     console.log("skip -> step", step)
     console.log("skip -> freeTimeSlots", freeTimeSlots)
