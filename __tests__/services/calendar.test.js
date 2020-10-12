@@ -9,7 +9,6 @@ describe("given a timespan", () => {
 
     it("should return an array of free time slots", () => {
       const result = findTimeSlot(DAY_WITH_FREE_TIME, timeSpan, END_TIME_MAX)
-      console.log("result", result)
       expect(result.length).toBe(1)
     })
   })
