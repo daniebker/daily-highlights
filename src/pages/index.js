@@ -1,6 +1,9 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 
-import { useAuthStatus, loginUser, logoutUser } from "gatsby-plugin-google-gapi"
+import { useAuthStatus, loginUser } from "gatsby-plugin-google-gapi"
+import { Wizard, Steps, Step } from "react-albus"
+
+import Picker from "react-mobile-picker-scroll"
 
 import { makeStyles } from "@material-ui/core/styles"
 import Box from "@material-ui/core/Box"
@@ -31,30 +34,84 @@ export default function Home() {
     setHighlight(event.target.value)
   }
 
-  const { authed} = useAuthStatus()
+  const [highlightTime, setHighlightTime] = useState({
+    valueGroups: {
+      hour: 1,
+      minutes: 15,
+    },
+  })
+
+  const handleHighlighTimeChange = (name, value) => {
+    setHighlightTime({
+      valueGroups: {
+        ...highlightTime.valueGroups,
+        [name]: value,
+      },
+    })
+  }
+
+  const { authed } = useAuthStatus()
 
   if (authed) {
     return (
       <Box className={classes.root}>
-        <Box className={classes.card}>
-          <Typography variant="h2">
-            What's your highlight of the day?
-          </Typography>
-          <Typography variant="body1">
-            Write down what you really want to get done today. This will be your
-            focus.
-          </Typography>
-          <TextField
-            variant="filled"
-            multiline
-            rows={6}
-            defaultValue="Write your highlight here..."
-            onChange={handleHighlightChangge}
-          />
-          <Button disabled={highlight ? false : true}>Next Step</Button>
-          
-          <Button onClick={x => logoutUser(x)}>logOut</Button>
-        </Box>
+        <Wizard>
+          <Steps>
+            <Step
+              id="setHighlights"
+              render={({ next }) => (
+                <Box className={classes.card}>
+                  <Typography variant="h2">
+                    What's your highlight of the day?
+                  </Typography>
+                  <Typography variant="body1">
+                    Write down what you really want to get done today. This will
+                    be your focus.
+                  </Typography>
+                  <TextField
+                    variant="filled"
+                    multiline
+                    rows={6}
+                    defaultValue="Write your highlight here..."
+                    onChange={handleHighlightChangge}
+                  />
+                  <Button disabled={highlight ? false : true} onClick={next}>
+                    Next Step
+                  </Button>
+                </Box>
+              )}
+            />
+            <Step
+              id="setTime"
+              render={({ next }) => (
+                <Box className={classes.card}>
+                  <Typography variant="h2">
+                    How much time do you need?
+                  </Typography>
+                  <Typography>
+                    How long do you think it will take you to finish your
+                    highlight? This can be anywhere between 15 minutes and 8
+                    hours long.
+                  </Typography>
+                  <Picker
+                    optionGroups={{
+                      hour: [1, 2, 3, 4, 5, 6, 7, 8],
+                      minutes: [0, 15, 30, 45],
+                    }}
+                    valueGroups={highlightTime.valueGroups}
+                    onChange={handleHighlighTimeChange}
+                  />
+                  <Button
+                    disabled={highlightTime ? false : true}
+                    onClick={next}
+                  >
+                    Next Step
+                  </Button>
+                </Box>
+              )}
+            />
+          </Steps>
+        </Wizard>
       </Box>
     )
   } else {
