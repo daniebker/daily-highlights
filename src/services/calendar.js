@@ -1,7 +1,6 @@
 import moment from "moment"
 
 export const findTimeSlot = (calendarItems, timeSpan, endTimeMax) => {
-  console.log("findTimeSlot -> timeSpan", timeSpan)
   const freeSlots = calendarItems.reduce((results, item, index) => {
     const highlightEndTime = moment(item.end.dateTime)
       .add(timeSpan.hour, "hours")
