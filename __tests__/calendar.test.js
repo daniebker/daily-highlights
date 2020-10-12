@@ -1,10 +1,10 @@
-const { findTimeSlot } = require("../src/services/calendar")
+import { findTimeSlot } from "../src/services/calendar"
 
 describe("given a timespan", () => {
   const timeSpan = { hour: 1, minutes: 15 }
 
   describe("when there are no free time slots", () => {
-    const calandarItems = [
+    const ONE_FULL_DAY_EVENT = [
       {
         start: {
           dateTime: "2020-09-16T09:00:00+02:00",
@@ -17,8 +17,8 @@ describe("given a timespan", () => {
       },
     ]
 
-    it("should return an empty array", () => {
-      const results = findTimeSlot(calandarItems, timeSpan)
+    it.each([ONE_FULL_DAY_EVENT])("should return an empty array", (events) => {
+      const results = findTimeSlot(events, timeSpan)
       expect(results.length).toBe(0)
     })
   })
