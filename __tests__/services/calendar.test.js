@@ -21,7 +21,6 @@ describe("given a timespan", () => {
         timeSpan,
         END_TIME_MAX
       )
-      console.log("results", results)
       expect(results.length).toBe(0)
     })
   })
