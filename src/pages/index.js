@@ -5,11 +5,15 @@ import { Wizard, Steps, Step } from "react-albus"
 
 import Picker from "react-mobile-picker-scroll"
 
+import moment from "moment"
+
 import { makeStyles } from "@material-ui/core/styles"
 import Box from "@material-ui/core/Box"
 import Button from "@material-ui/core/Button"
 import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
+
+const MOMENT_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -53,21 +57,24 @@ export default function Home() {
   const [freeTimeSlots, setFreeTimeSlots] = useState([])
   useEffect(() => {
     const isBrowser = () => typeof window !== "undefined"
+    console.log("getEvents -> ", moment().endOf("day").format(MOMENT_FORMAT))
     const getEvents = async () => {
       if (isBrowser() && window.gapi) {
         const events = await window.gapi.client.calendar.events.list({
           calendarId: "primary",
-          timeMin: new Date().toISOString(),
+          timeMin: moment().format(MOMENT_FORMAT),
+          timeMax: moment().endOf("day").format(MOMENT_FORMAT),
           showDeleted: false,
           singleEvents: true,
-          maxResults: 10,
+          maxResults: 50,
           orderBy: "startTime",
         })
+        console.log("getEvents -> events", events)
       }
     }
     getEvents()
   }, [])
-  
+
   const skip = ({ step, push }) => {
     console.log("skip -> step", step)
     console.log("skip -> freeTimeSlots", freeTimeSlots)
