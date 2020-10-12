@@ -15,7 +15,9 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.11.0",
+    "dotenv": "^8.2.0",
     "gatsby": "^2.24.67",
+    "gatsby-plugin-google-gapi": "^0.0.10",
     "gatsby-theme-material-ui": "^1.0.13",
     "react": "^16.12.0",
     "react-dom": "^16.12.0"
