@@ -2,7 +2,7 @@ import moment from "moment"
 
 const MOMENT_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
 
-export const END_TIME_MAX  = moment("2020-10-16T19:00:00")
+export const END_TIME_MAX = moment("2020-10-16T18:00:00")
 
 export default class EventBuilder {
   events = []

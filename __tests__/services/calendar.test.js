@@ -13,8 +13,21 @@ describe("given a timespan", () => {
     })
   })
 
+  describe("when highlight ends after max alloted end time", () => {
+    const ANOTHER_FULL_CALENDAR = new EventBuilder().addEvent(9, 8).events
+    it("should return an empty array", () => {
+      const results = findTimeSlot(
+        ANOTHER_FULL_CALENDAR,
+        timeSpan,
+        END_TIME_MAX
+      )
+      console.log("results", results)
+      expect(results.length).toBe(0)
+    })
+  })
+
   describe("when there are no free time slots", () => {
-    const ONE_FULL_DAY_EVENT = new EventBuilder().addEvent(9, 16).events
+    const ONE_FULL_DAY_EVENT = new EventBuilder().addEvent(0, 24).events
     const BACK_TO_BACK_EVENTS_ALL__DAY = new EventBuilder()
       .addEvent(9, 2)
       .addEvent(11, 2)
