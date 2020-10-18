@@ -3,7 +3,7 @@ import moment from "moment"
 const GOOGLE_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
 
 const findTimeSlot = (calendarItems, timeSpan, endTimeMax) => {
-  if (calendarItems.length === 0) {
+  if (calendarItems?.length === 0) {
     return getFromNowUntilEndTime(timeSpan, endTimeMax)
   }
 

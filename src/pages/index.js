@@ -3,11 +3,8 @@ import React, { useState, useEffect } from "react"
 import { useAuthStatus, loginUser } from "gatsby-plugin-google-gapi"
 import { Wizard, Steps, Step } from "react-albus"
 
-// Wrap the require in check for window
-let Picker
-if (typeof window !== `undefined`) {
-  Picker = require("react-mobile-picker-scroll")
-}
+import Picker from "react-mobile-picker-scroll"
+
 import moment from "moment"
 
 import { makeStyles } from "@material-ui/core/styles"
@@ -158,16 +155,14 @@ export default function Home() {
                     highlight? This can be anywhere between 15 minutes and 8
                     hours long.
                   </Typography>
-                  {Picker && (
-                    <Picker
-                      optionGroups={{
-                        hour: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-                        minutes: [0, 15, 30, 45],
-                      }}
-                      valueGroups={highlightTime.valueGroups}
-                      onChange={handleHighlighTimeChange}
-                    />
-                  )}
+                  <Picker
+                    optionGroups={{
+                      hour: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                      minutes: [0, 15, 30, 45],
+                    }}
+                    valueGroups={highlightTime.valueGroups}
+                    onChange={handleHighlighTimeChange}
+                  />
                   <Button
                     color="primary"
                     variant="contained"
