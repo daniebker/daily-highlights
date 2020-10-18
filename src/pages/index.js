@@ -9,12 +9,11 @@ import moment from "moment"
 
 import { makeStyles } from "@material-ui/core/styles"
 import Box from "@material-ui/core/Box"
-import Button from "@material-ui/core/Button"
+import { Button } from "gatsby-theme-material-ui"
 import TextField from "@material-ui/core/TextField"
 import Typography from "@material-ui/core/Typography"
-import { findTimeSlot } from "../services/calendar"
-
-const MOMENT_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
+import ChevronRightIcon from "@material-ui/icons/ChevronRight"
+import calendar from "../services/calendar"
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,13 +28,25 @@ const useStyles = makeStyles(theme => ({
     padding: "1rem",
     justifyContent: "space-between",
   },
+  button: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    textTransform: "none",
+  },
+  timeSelectBox: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-evenly",
+    alignContent: "flex-start",
+    alignItems: "center",
+  },
 }))
 
 export default function Home() {
   const classes = useStyles()
 
   const [highlight, setHighlight] = useState()
-  const handleHighlightChangge = event => {
+  const handleHighlightChange = event => {
     setHighlight(event.target.value)
   }
 
@@ -46,6 +57,7 @@ export default function Home() {
     },
   })
 
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(-1)
   const handleHighlighTimeChange = (name, value) => {
     setHighlightTime({
       valueGroups: {
@@ -55,32 +67,31 @@ export default function Home() {
     })
   }
 
+  const [eventUrl, setEventUrl] = useState()
+  const [schedulingEvent, setSchedulingEvent] = useState()
+  const handleScheduleEvent = async () => {
+    setSchedulingEvent(true)
+    const onSuccess = event => {
+      setEventUrl(event.htmlLink)
+      setSchedulingEvent(false)
+    }
+    calendar.scheduleHighlightTime(
+      freeTimeSlots[selectedTimeSlot],
+      highlight,
+      onSuccess
+    )
+  }
+
   const [freeTimeSlots, setFreeTimeSlots] = useState([])
   useEffect(() => {
-    const isBrowser = () => typeof window !== "undefined"
     const getEvents = async () => {
-      if (isBrowser() && window.gapi) {
-        const events = await window.gapi.client.calendar.events.list({
-          calendarId: "primary",
-          timeMin: moment().format(MOMENT_FORMAT),
-          timeMax: moment().endOf("day").format(MOMENT_FORMAT),
-          showDeleted: false,
-          singleEvents: true,
-          maxResults: 50,
-          orderBy: "startTime",
-        })
-
-        const nomarlisedEvents = events.result.items.map(event => {
-          const { start, end } = event
-          return { start, end }
-        })
-        const freeTimeSlots = findTimeSlot(
-          nomarlisedEvents,
-          highlightTime.valueGroups,
-          moment().set("hour", 18).set("minute", 0)
-        )
-        setFreeTimeSlots(freeTimeSlots)
-      }
+      const nomarlisedEvents = await calendar.getEvents()
+      const freeTimeSlots = calendar.findTimeSlot(
+        nomarlisedEvents,
+        highlightTime.valueGroups,
+        moment().set("hour", 20).set("minute", 0)
+      )
+      setFreeTimeSlots(freeTimeSlots)
     }
     getEvents()
   }, [highlightTime])
@@ -116,9 +127,17 @@ export default function Home() {
                     multiline
                     rows={6}
                     defaultValue="Write your highlight here..."
-                    onChange={handleHighlightChangge}
+                    onChange={handleHighlightChange}
                   />
-                  <Button disabled={highlight ? false : true} onClick={next}>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    disabled={highlight ? false : true}
+                    onClick={next}
+                    endIcon={<ChevronRightIcon />}
+                    fullWidth
+                  >
                     Next Step
                   </Button>
                 </Box>
@@ -145,8 +164,12 @@ export default function Home() {
                     onChange={handleHighlighTimeChange}
                   />
                   <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
                     disabled={highlightTime ? false : true}
                     onClick={next}
+                    endIcon={<ChevronRightIcon />}
                   >
                     Next Step
                   </Button>
@@ -162,22 +185,48 @@ export default function Home() {
                     You have {freeTimeSlots.length} time slots to focus on your
                     highlight. Which one do you want to schedule?
                   </Typography>
+                  <Box className={classes.timeSelectBox}>
+                    {freeTimeSlots.map((timeSlot, index) => {
+                      let selectedProps
+                      if (index === selectedTimeSlot) {
+                        selectedProps = { color: "primary" }
+                      }
 
-                  {freeTimeSlots.map((timeSlot, index) => (
-                    <p key={index}>
-                      {timeSlot.start.format("HH:mm")} -{" "}
-                      {timeSlot.end.format("HH:mm")}
-                    </p>
-                  ))}
-                  <Button disabled={true} onClick={next}>
-                    Next Step
+                      return (
+                        <Box key={index} m={1} p={0}>
+                          <Button
+                            {...selectedProps}
+                            className={classes.timeButton}
+                            variant="outlined"
+                            onClick={() => {
+                              setSelectedTimeSlot(index)
+                            }}
+                          >
+                            {timeSlot.start.format("HH:mm")} -{" "}
+                            {timeSlot.end.format("HH:mm")}
+                          </Button>
+                        </Box>
+                      )
+                    })}
+                  </Box>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    disabled={
+                      selectedTimeSlot >= 0 || schedulingEvent ? false : true
+                    }
+                    onClick={handleScheduleEvent}
+                  >
+                    Schedule
                   </Button>
+                  {eventUrl && <Button href={eventUrl}>View Event</Button>}
                 </Box>
               )}
             />
-            <Step
+            <Steps
               id="noFreeSlots"
-              render={({ next }) => (
+              render={() => (
                 <Box className={classes.card}>
                   <Typography variant="h2">
                     You don't have any free time slots.
@@ -195,9 +244,11 @@ export default function Home() {
     )
   } else {
     return (
-      <Button variant="contained" color="primary" onClick={loginUser}>
-        login
-      </Button>
+      <Box className={classes.root}>
+        <Button variant="contained" color="primary" onClick={loginUser}>
+          login
+        </Button>
+      </Box>
     )
   }
 }

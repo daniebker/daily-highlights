@@ -1,5 +1,6 @@
-import { findTimeSlot } from "../../src/services/calendar"
+import calendar from "../../src/services/calendar"
 import EventBuilder, { END_TIME_MAX } from "../builders/eventBuilder"
+import moment from "moment"
 
 describe("given a timespan", () => {
   const timeSpan = { hour: 1, minutes: 15 }
@@ -8,7 +9,26 @@ describe("given a timespan", () => {
     const DAY_WITH_FREE_TIME = new EventBuilder().addEvent(12, 1).events
 
     it("should return an array of free time slots", () => {
-      const result = findTimeSlot(DAY_WITH_FREE_TIME, timeSpan, END_TIME_MAX)
+      const result = calendar.findTimeSlot(
+        DAY_WITH_FREE_TIME,
+        timeSpan,
+        END_TIME_MAX
+      )
+      expect(result.length).toBe(1)
+    })
+  })
+
+  describe("when there is time between events", () => {
+    const TIME_BETWEEN_EVENTS = new EventBuilder()
+      .addEvent(12, 1)
+      .addEvent(15, 18).events
+
+    it("should return an array of free time slots", () => {
+      const result = calendar.findTimeSlot(
+        TIME_BETWEEN_EVENTS,
+        timeSpan,
+        END_TIME_MAX
+      )
       expect(result.length).toBe(1)
     })
   })
@@ -16,7 +36,7 @@ describe("given a timespan", () => {
   describe("when highlight ends after max alloted end time", () => {
     const ANOTHER_FULL_CALENDAR = new EventBuilder().addEvent(9, 8).events
     it("should return an empty array", () => {
-      const results = findTimeSlot(
+      const results = calendar.findTimeSlot(
         ANOTHER_FULL_CALENDAR,
         timeSpan,
         END_TIME_MAX
@@ -35,10 +55,23 @@ describe("given a timespan", () => {
     it.each([[ONE_FULL_DAY_EVENT], [BACK_TO_BACK_EVENTS_ALL__DAY]])(
       `should return an empty array for calendar with %o`,
       events => {
-        const results = findTimeSlot(events, timeSpan, END_TIME_MAX)
+        const results = calendar.findTimeSlot(events, timeSpan, END_TIME_MAX)
         expect(results.length).toBe(0)
       }
     )
+  })
+
+  describe("when there are no events", () => {
+    it("should return a list of free time slots from the current time", () => {
+      const now = moment()
+
+      const endTime = now.add(1, "hours").add(2, "minutes")
+      const time = { hour: 0, minutes: 15 }
+
+      const freeSlots = calendar.findTimeSlot([], time, endTime)
+
+      expect(freeSlots.length).toBe(4)
+    })
   })
 })
 

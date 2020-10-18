@@ -16,7 +16,7 @@ module.exports = {
         apiKey: process.env.API_KEY,
         clientId: process.env.CLIENT_ID,
         discoveryURLs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-        scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
+        scopes: ["https://www.googleapis.com/auth/calendar"],
       },
     },
   ],

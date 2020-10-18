@@ -7,12 +7,12 @@ export const END_TIME_MAX = moment("2020-10-16T18:00:00")
 export default class EventBuilder {
   events = []
 
-  addEvent(start, duration) {
+  addEvent(hour, duration) {
     let startDateTime
-    if (start < 10) {
-      startDateTime = moment(`2020-10-16T0${start}:00:00`)
+    if (hour < 10) {
+      startDateTime = moment(`2020-10-16T0${hour}:00:00`)
     } else {
-      startDateTime = moment(`2020-10-16T${start}:00:00`)
+      startDateTime = moment(`2020-10-16T${hour}:00:00`)
     }
     this.events.push({
       start: {
@@ -20,7 +20,10 @@ export default class EventBuilder {
         timeZone: "Europe/Madrid",
       },
       end: {
-        dateTime: startDateTime.add(duration, "h").format(MOMENT_FORMAT),
+        dateTime: startDateTime
+          .clone()
+          .add(duration, "h")
+          .format(MOMENT_FORMAT),
         timeZone: "Europe/Madrid",
       },
     })
