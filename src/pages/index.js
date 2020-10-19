@@ -89,7 +89,7 @@ export default function Home() {
       const freeTimeSlots = calendar.findTimeSlot(
         nomarlisedEvents,
         highlightTime.valueGroups,
-        moment().set("hour", 20).set("minute", 0)
+        moment().set("hour", 18).set("minute", 0)
       )
       setFreeTimeSlots(freeTimeSlots)
     }
@@ -97,7 +97,7 @@ export default function Home() {
   }, [highlightTime])
 
   const skip = ({ step, push }) => {
-    if (step.id === "setTime" && freeTimeSlots.length === 0) {
+    if (step.id === "setTime" && freeTimeSlots?.length === 0) {
       push("noFreeSlots")
     } else {
       push()
@@ -178,7 +178,7 @@ export default function Home() {
             />
             <Step
               id="pickTime"
-              render={({ next }) => (
+              render={() => (
                 <Box className={classes.card}>
                   <Typography variant="h2">You've got time.</Typography>
                   <Typography>
@@ -202,8 +202,8 @@ export default function Home() {
                               setSelectedTimeSlot(index)
                             }}
                           >
-                            {timeSlot.start.format("HH:mm")} -{" "}
-                            {timeSlot.end.format("HH:mm")}
+                            {moment(timeSlot.start).format("HH:mm")} -{" "}
+                            {moment(timeSlot.end).format("HH:mm")}
                           </Button>
                         </Box>
                       )
@@ -224,7 +224,7 @@ export default function Home() {
                 </Box>
               )}
             />
-            <Steps
+            <Step
               id="noFreeSlots"
               render={() => (
                 <Box className={classes.card}>
