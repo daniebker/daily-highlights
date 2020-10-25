@@ -15,6 +15,8 @@ import Typography from "@material-ui/core/Typography"
 import ChevronRightIcon from "@material-ui/icons/ChevronRight"
 import calendar from "../services/calendar"
 
+import Navigation from "../components/Navigation"
+
 const useStyles = makeStyles(theme => ({
   root: {
     display: "grid",
@@ -109,6 +111,7 @@ export default function Home() {
   if (authed) {
     return (
       <Box className={classes.root}>
+        <Navigation />
         <Wizard onNext={skip}>
           <Steps>
             <Step
