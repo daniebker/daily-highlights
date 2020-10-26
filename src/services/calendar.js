@@ -48,6 +48,22 @@ const scheduleHighlightTime = async (time, description, callback) => {
   }
 }
 
+const getCalendars = async () => {
+  if (isBrowser && window.gapi?.client?.calendar) {
+    const calendars = await window.gapi.client.calendar.calendarList.list()
+    console.log("calendars", calendars)
+    return calendars.result.items.map(item => {
+      return {
+        backGroundColor: item.backGroundColor,
+        description: item.description,
+        foregroundColor: item.foregroundColor,
+        summary: item.summary,
+        timeZone: item.timeZone,
+      }
+    })
+  }
+}
+
 const getEvents = async () => {
   if (isBrowser() && window.gapi?.client?.calendar) {
     const events = await window.gapi.client.calendar.events.list({
@@ -139,4 +155,5 @@ export default {
   getEvents,
   scheduleHighlightTime,
   findTimeSlot,
+  getCalendars,
 }
