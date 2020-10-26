@@ -3,10 +3,9 @@ import { makeStyles } from "@material-ui/core/styles"
 import Drawer from "@material-ui/core/Drawer"
 import Button from "@material-ui/core/Button"
 import List from "@material-ui/core/List"
-import SettingsIcon from '@material-ui/icons/Settings';
-import ListItem from "@material-ui/core/ListItem"
-import ListItemIcon from "@material-ui/core/ListItemIcon"
-import ListItemText from "@material-ui/core/ListItemText"
+import SettingsIcon from "@material-ui/icons/Settings"
+import HomeIcon from '@material-ui/icons/Home';
+import ListItemLink from "./ListItemLink"
 
 const useStyles = makeStyles({
   list: {
@@ -40,12 +39,12 @@ export default function TemporaryDrawer() {
       onKeyDown={toggleDrawer()}
     >
       <List>
-        <ListItem button>
-          <ListItemIcon>
-              <SettingsIcon /> 
-          </ListItemIcon>
-          <ListItemText primary="Settings" />
-        </ListItem>
+        <ListItemLink icon={SettingsIcon} to="/" primary="Home">
+          <HomeIcon />
+        </ListItemLink>
+        <ListItemLink icon={SettingsIcon} to="/settings" primary="Settings">
+          <SettingsIcon />
+        </ListItemLink>
       </List>
     </div>
   )
