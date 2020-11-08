@@ -10,7 +10,7 @@ describe("given a timespan", () => {
   beforeEach(() => {
     MockDate.set("2020-10-16T09:00:00")
   })
-  const timeSpan = { hour: 1, minutes: 15 }
+  const oneHourFifteenMinutes = { hour: 1, minutes: 15 }
 
   describe("when there is time before the first event", () => {
     it("should return the first time", () => {
@@ -18,21 +18,21 @@ describe("given a timespan", () => {
 
       const result = calendar.findTimeSlot(
         TIME_BEFORE_FIRST_EVENT,
-        timeSpan,
+        oneHourFifteenMinutes,
         END_TIME_MAX
       )
       expect(result.length).toBe(1)
     })
 
     describe("when there are multiple slots before the first event", () => {
-      const shortTimeSpan = { hour: 0, minutes: 30 }
+      const thirtyMiniutes = { hour: 0, minutes: 30 }
       it("should reutrn multiple free slots", () => {
         const TIME_BEFORE_FIRST_EVENT = new EventBuilder().addEvent(10, 18)
           .events
 
         const result = calendar.findTimeSlot(
           TIME_BEFORE_FIRST_EVENT,
-          shortTimeSpan,
+          thirtyMiniutes,
           END_TIME_MAX
         )
         expect(result.length).toBe(2)
@@ -54,7 +54,7 @@ describe("given a timespan", () => {
     it("should only take into account the start time", () => {
       const result = calendar.findTimeSlot(
         EVENT_UNTIL_NETXT_DAY,
-        timeSpan,
+        oneHourFifteenMinutes,
         END_TIME_MAX
       )
       expect(result.length).toBe(1)
@@ -69,7 +69,7 @@ describe("given a timespan", () => {
     it("should return an array of free time slots", () => {
       const result = calendar.findTimeSlot(
         DAY_WITH_FREE_TIME,
-        timeSpan,
+        oneHourFifteenMinutes,
         END_TIME_MAX
       )
       expect(result.length).toBe(1)
@@ -85,7 +85,7 @@ describe("given a timespan", () => {
     it("should return an array of free time slots", () => {
       const result = calendar.findTimeSlot(
         TIME_BETWEEN_EVENTS,
-        timeSpan,
+        oneHourFifteenMinutes,
         END_TIME_MAX
       )
       expect(result.length).toBe(1)
@@ -97,7 +97,7 @@ describe("given a timespan", () => {
     it("should return an empty array", () => {
       const results = calendar.findTimeSlot(
         ANOTHER_FULL_CALENDAR,
-        timeSpan,
+        oneHourFifteenMinutes,
         END_TIME_MAX
       )
       expect(results.length).toBe(0)
@@ -114,7 +114,7 @@ describe("given a timespan", () => {
     it.each([[ONE_FULL_DAY_EVENT], [BACK_TO_BACK_EVENTS_ALL__DAY]])(
       `should return an empty array for calendar with %o`,
       events => {
-        const results = calendar.findTimeSlot(events, timeSpan, END_TIME_MAX)
+        const results = calendar.findTimeSlot(events, oneHourFifteenMinutes, END_TIME_MAX)
         expect(results.length).toBe(0)
       }
     )

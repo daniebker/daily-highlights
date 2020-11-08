@@ -116,22 +116,15 @@ function findFreeTimeSlots(calendarItems, timeSpan, endTimeMax) {
     .add(timeSpan.hour, "hours")
     .add(timeSpan.minutes, "minutes")
 
-  const firstEventStartTime = moment(calendarItems[0].start.dateTime)
-
-  if (highlightEndTime.isBefore(firstEventStartTime)) {
-    freeTimeSlots = getFromNowUntilEndTime(timeSpan, firstEventStartTime)
-  }
+  findTimeSlotsBeforeFirstEvent()
 
   return calendarItems.reduce((results, item, index) => {
     highlightEndTime = moment(item.end.dateTime)
       .add(timeSpan.hour, "hours")
       .add(timeSpan.minutes, "minutes")
 
-    if (!highlightEndTime.isSame(new moment(), "day")) {
-      return results
-    }
-
     if (
+      highlightEndTimeIsToday() &&
       thereIsNotAnEventAfterThis(calendarItems, index) &&
       highlightEndsBeforeEndTimeMax(highlightEndTime, endTimeMax)
     ) {
@@ -139,13 +132,28 @@ function findFreeTimeSlots(calendarItems, timeSpan, endTimeMax) {
         start: item.end.dateTime,
         end: highlightEndTime,
       })
-    } else if (thereIsAnEventAfterThis(calendarItems, index)) {
-      addTimeGaps(index, results, item, highlightEndTime)
+    } else if (
+      highlightEndTimeIsToday() &&
+      thereIsAnEventAfterThis(calendarItems, index)
+    ) {
+      addFreeSlotsUntilNextEvent(index, results, item)
     }
     return results
   }, freeTimeSlots)
 
-  function addTimeGaps(index, results, item, highlightEndTime) {
+  function findTimeSlotsBeforeFirstEvent() {
+    const firstEventStartTime = moment(calendarItems[0].start.dateTime)
+
+    if (highlightEndTime.isBefore(firstEventStartTime)) {
+      freeTimeSlots = getFromNowUntilEndTime(timeSpan, firstEventStartTime)
+    }
+  }
+
+  function highlightEndTimeIsToday() {
+    return highlightEndTime.isSame(new moment(), "day")
+  }
+
+  function addFreeSlotsUntilNextEvent(index, results, item) {
     const timeGap = moment.duration(
       moment(calendarItems[index + 1].start.dateTime).diff(
         moment(calendarItems[index].end.dateTime)
