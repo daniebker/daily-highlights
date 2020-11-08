@@ -1,4 +1,5 @@
 import moment from "moment"
+import { isBrowser } from "./browser"
 
 const GOOGLE_FORMAT = "YYYY-MM-DDTHH:mm:ssZZ"
 
@@ -51,10 +52,10 @@ const scheduleHighlightTime = async (time, description, callback) => {
 const getCalendars = async () => {
   if (isBrowser && window.gapi?.client?.calendar) {
     const calendars = await window.gapi.client.calendar.calendarList.list()
-    console.log("calendars", calendars)
     return calendars.result.items.map(item => {
       return {
-        backGroundColor: item.backGroundColor,
+        id: item.id,
+        backgroundColor: item.backgroundColor,
         description: item.description,
         foregroundColor: item.foregroundColor,
         summary: item.summary,
@@ -64,26 +65,36 @@ const getCalendars = async () => {
   }
 }
 
-const getEvents = async () => {
+const getEvents = async calendars => {
   if (isBrowser() && window.gapi?.client?.calendar) {
-    const events = await window.gapi.client.calendar.events.list({
-      calendarId: "primary",
-      timeMin: moment().format(GOOGLE_FORMAT),
-      timeMax: moment().endOf("day").format(GOOGLE_FORMAT),
-      showDeleted: false,
-      singleEvents: true,
-      maxResults: 50,
-      orderBy: "startTime",
-    })
+    const allEvents = await Promise.all(
+      calendars.map(async calendar => {
+        return await window.gapi.client.calendar.events.list({
+          calendarId: calendar,
+          timeMin: moment().format(GOOGLE_FORMAT),
+          timeMax: moment().endOf("day").format(GOOGLE_FORMAT),
+          showDeleted: false,
+          singleEvents: true,
+          maxResults: 50,
+          orderBy: "startTime",
+        })
+      })
+    )
 
-    return events.result.items.map(event => {
-      const { start, end } = event
-      return { start, end }
-    })
+    const normaliseResult = allEvents
+      .map(response => {
+        return response.result.items.map(event => {
+          const { start, end } = event
+          return { start, end }
+        })
+      })
+      .reduce((acc, current) => {
+        const newVal = acc.concat(current)
+        return newVal
+      }, [])
+    return normaliseResult
   }
 }
-
-const isBrowser = () => typeof window !== "undefined"
 
 const thereIsNotAnEventAfterThis = (calendarItems, index) => {
   return !calendarItems[index + 1]
@@ -98,10 +109,27 @@ const highlightEndsBeforeEndTimeMax = (highlightEndTime, endTimeMax) => {
 }
 
 function findFreeTimeSlots(calendarItems, timeSpan, endTimeMax) {
+  const now = moment()
+  let freeTimeSlots = []
+  let highlightEndTime = now
+    .clone()
+    .add(timeSpan.hour, "hours")
+    .add(timeSpan.minutes, "minutes")
+
+  const firstEventStartTime = moment(calendarItems[0].start.dateTime)
+
+  if (highlightEndTime.isBefore(firstEventStartTime)) {
+    freeTimeSlots = getFromNowUntilEndTime(timeSpan, firstEventStartTime)
+  }
+
   return calendarItems.reduce((results, item, index) => {
-    const highlightEndTime = moment(item.end.dateTime)
+    highlightEndTime = moment(item.end.dateTime)
       .add(timeSpan.hour, "hours")
       .add(timeSpan.minutes, "minutes")
+
+    if (!highlightEndTime.isSame(new moment(), "day")) {
+      return results
+    }
 
     if (
       thereIsNotAnEventAfterThis(calendarItems, index) &&
@@ -115,7 +143,7 @@ function findFreeTimeSlots(calendarItems, timeSpan, endTimeMax) {
       addTimeGaps(index, results, item, highlightEndTime)
     }
     return results
-  }, [])
+  }, freeTimeSlots)
 
   function addTimeGaps(index, results, item, highlightEndTime) {
     const timeGap = moment.duration(

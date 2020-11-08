@@ -14,4 +14,6 @@ module.exports = {
   testURL: `http://localhost`,
   setupFiles: [`<rootDir>/loadershim.js`],
   testMatch: ["**/?(*.)+(spec|test).js"],
+  setupFilesAfterEnv: ["jest-extended"],
 }
+

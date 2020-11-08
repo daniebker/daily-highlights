@@ -1,12 +1,70 @@
 import calendar from "../../src/services/calendar"
-import EventBuilder, { END_TIME_MAX } from "../builders/eventBuilder"
+import EventBuilder, {
+  END_TIME_MAX,
+  MOMENT_FORMAT,
+} from "../builders/eventBuilder"
 import moment from "moment"
+import MockDate from "mockdate"
 
 describe("given a timespan", () => {
+  beforeEach(() => {
+    MockDate.set("2020-10-16T09:00:00")
+  })
   const timeSpan = { hour: 1, minutes: 15 }
 
+  describe("when there is time before the first event", () => {
+    it("should return the first time", () => {
+      const TIME_BEFORE_FIRST_EVENT = new EventBuilder().addEvent(11, 18).events
+
+      const result = calendar.findTimeSlot(
+        TIME_BEFORE_FIRST_EVENT,
+        timeSpan,
+        END_TIME_MAX
+      )
+      expect(result.length).toBe(1)
+    })
+
+    describe("when there are multiple slots before the first event", () => {
+      const shortTimeSpan = { hour: 0, minutes: 30 }
+      it("should reutrn multiple free slots", () => {
+        const TIME_BEFORE_FIRST_EVENT = new EventBuilder().addEvent(10, 18)
+          .events
+
+        const result = calendar.findTimeSlot(
+          TIME_BEFORE_FIRST_EVENT,
+          shortTimeSpan,
+          END_TIME_MAX
+        )
+        expect(result.length).toBe(2)
+        expect(result[0].start.format(MOMENT_FORMAT)).toStartWith(
+          "2020-10-16T09:00:00"
+        )
+        expect(result[1].start.format(MOMENT_FORMAT)).toStartWith(
+          "2020-10-16T09:30:00"
+        )
+      })
+    })
+  })
+
+  describe("when an event spans to the next day", () => {
+    const EVENT_UNTIL_NETXT_DAY = new EventBuilder()
+      .addEventWithTime("2020-10-16T09:00:00", "2020-10-16T17:00:00")
+      .addEventWithTime("2020-10-16T18:30:00", "2020-10-17T06:30:00").events
+
+    it("should only take into account the start time", () => {
+      const result = calendar.findTimeSlot(
+        EVENT_UNTIL_NETXT_DAY,
+        timeSpan,
+        END_TIME_MAX
+      )
+      expect(result.length).toBe(1)
+    })
+  })
+
   describe("when there is time after the last event", () => {
-    const DAY_WITH_FREE_TIME = new EventBuilder().addEvent(12, 1).events
+    const DAY_WITH_FREE_TIME = new EventBuilder()
+      .addEventWithTime("2020-10-16T09:00:00", "2020-10-16T12:00:00")
+      .addEventWithTime("2020-10-16T12:00:00", "2020-10-16T13:00:00").events
 
     it("should return an array of free time slots", () => {
       const result = calendar.findTimeSlot(
@@ -20,6 +78,7 @@ describe("given a timespan", () => {
 
   describe("when there is time between events", () => {
     const TIME_BETWEEN_EVENTS = new EventBuilder()
+      .addEvent(9, 3)
       .addEvent(12, 1)
       .addEvent(15, 18).events
 
